@@ -7,13 +7,24 @@ import { Round } from '../models/round.model.js'
 import {Submission} from "../models/submission.model.js"
 
 
+export const browseHackathons = async(req,res)=>{
+    try {
+      const hackathons = await Hackathon.find()
+      if(!hackathons) res.status(404).json({
+        message: "No hackathons are available"
+      })
+      res.status(200).json({hackathons})
+    } catch (error) {
+      res.status(500).json(error.message)
+    }
+}
 
 export const registerHackathon = async (req,res)=>{
     try {
-        const {name, description, finaleDate, prizePool, Banner, votingOpen, maxTeamSize, roundTotal} = req.body;
+        const {name, description, finaleDate, prizePool, votingOpen, maxTeamSize, roundTotal} = req.body;
         
         if(
-            [name, description, finaleDate, Banner].some((field)=> field?.trim()==="" )
+            [name, description, finaleDate].some((field)=> field?.trim()==="" )
         ){
             throw new Error("Fill all the fields");
         }
@@ -33,15 +44,33 @@ export const registerHackathon = async (req,res)=>{
                  description,
                  finaleDate, 
                  prizePool, 
-                 Banner, 
                  votingOpen, 
                  maxTeamSize, 
                  roundTotal
                 })
+        
+                const bannerLocalPath = req.file.path;
+
+                if(!bannerLocalPath){
+                    throw new Error("Please upload an banner");
+                }
+            
+                const banner = await uploadOnCloudinary(bannerLocalPath)
+            
+                if(!banner.url){
+                    throw new Error("Error while uploading banner");
+                }
     
-        await User.findByIdAndUpdate(user._id,{
-            $push:{ownedHackathons:hackathon._id}
-        })
+                await Hackathon.findByIdAndUpdate(
+                  hackathon._id,
+                  {
+                      $set: { banner: banner.url }
+                  }
+              );
+      
+              await User.findByIdAndUpdate(user._id, {
+                  $push: { ownedHackathons: hackathon._id }
+              });
     
         res.status(201).json({ success: true, hackathon });
     } catch (error) {
@@ -51,7 +80,7 @@ export const registerHackathon = async (req,res)=>{
 
 export const getHackathonDetails = async (req,res) =>{
     try {
-        const hackathon = await Hackathon.findOne({ name: req.params.name });
+        const hackathon = await Hackathon.findById(req.params.id);
         if(!hackathon) return res.status(404).json({ message: 'Hackathon not found' });
 
         res.status(200).json({success: true, hackathon});
@@ -62,9 +91,9 @@ export const getHackathonDetails = async (req,res) =>{
 
 export const addRound = async (req, res) => {
     try {
-      const { name } = req.params;
+      const { id } = req.params;
   
-      const hackathon = await Hackathon.findOne({name:name});
+      const hackathon = await Hackathon.findById(id);
       if (!hackathon) return res.status(404).json({ message: "Hackathon not found" });
   
       if (hackathon.roundAt > hackathon.roundTotal) {
@@ -89,6 +118,16 @@ export const addRound = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+
+export const getRounds = async (req,res)=>{
+  const {id} = req.params;
+  const response = await Round.find({hackathonId:id})
+
+  if (response.length === 0) { // ✅ Correct empty check
+    return res.status(404).json({ message: 'No rounds found for this Hackathon' });
+  }
+  return res.status(200).json(response)
+}
 
 export const getSubmissionsForHackathon = async (req, res) => {
   try {

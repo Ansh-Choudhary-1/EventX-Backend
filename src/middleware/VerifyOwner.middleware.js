@@ -3,9 +3,9 @@ import { Hackathon } from "../models/hackathon.model.js";
 export const verifyHackathonOwner = async (req, res, next) => {
     try {
         const user = req.user;
-        const { name } = req.params;
+        const { id } = req.params;
 
-        const hackathon = await Hackathon.findOne({ name });
+        const hackathon = await Hackathon.findById(id);
         if (!hackathon) return res.status(404).json({ message: "Hackathon not found" });
 
         if (!user.ownedHackathons.includes(hackathon._id)) {
