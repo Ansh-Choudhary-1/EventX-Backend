@@ -16,9 +16,10 @@ app.use(express.json({limit:"16kb"}))
 app.use(cookieParser())
 
 import userRoutes from './routes/user.routes.js';
-
+import hackathonRoutes from './routes/hackathonOrganizer.routes.js'
 
 app.use("/api/v1/user",userRoutes)
+app.use("/api/v1/hackathon/organizer",hackathonRoutes)
 
-
+//app.use("api/v1/hackathon/participants")
 export{app}
