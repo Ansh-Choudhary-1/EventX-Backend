@@ -21,6 +21,6 @@ import participantRoutes from './routes/participants.routes.js';
 
 app.use("/api/v1/user",userRoutes)
 app.use("/api/v1/hackathon/organizer",hackathonRoutes)
-app.use("/api/v1/participant", participantRoutes);
+app.use("/api/v1/hackathon/participant", participantRoutes);
 
 export{app}
