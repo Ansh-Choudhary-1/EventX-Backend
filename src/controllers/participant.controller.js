@@ -207,13 +207,14 @@ export const joinTeam = async (req, res) => {
 
 export const getTeam = async(req,res) => {
   const {id} = req.params;
-  const response = await Team.findOne(id);
+  const response = await Team.findById(id);
 
-  if(!response.ok) return res.status(500).json({message:"Team not found"})
+  if(!response) return res.status(500).json({message:"Team not found"})
 
-    const data = response.json();
-    console.log(data);
+    const users = await User.find({ _id: { $in: response.memberIds } }, "name");
     
+    const data = response.toObject();
+    data.membersName = users;
 
   return res.status(200).json(data)
 }
