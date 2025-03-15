@@ -107,7 +107,7 @@ export const loginUser = async(req,res)=>{
             httpOnly: true, 
             secure: true,
             sameSite: "none",
-            domain:"https://eventx-backend-u79p.onrender.com"
+            domain:"eventx-backend-u79p.onrender.com"
         }
         
         return res
