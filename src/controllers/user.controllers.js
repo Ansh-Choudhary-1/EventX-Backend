@@ -59,7 +59,8 @@ export const registerUser = async(req,res)=>{
         const options = {
             httpOnly: true, 
             secure: true,
-            sameSite: "lax"
+            sameSite: none,
+            domain:"http://localhost:5173/"
         }
         
         return res.status(200)
