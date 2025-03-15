@@ -5,7 +5,7 @@ import cors from 'cors'
 const app = express();
 
 app.use(cors({
-    origin: "https://eventx-beige.vercel.app/",
+    origin: "https://eventx-beige.vercel.app",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
