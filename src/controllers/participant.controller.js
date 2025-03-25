@@ -5,25 +5,27 @@ import mongoose, { mongo } from "mongoose";
 
 export const createTeam = async (req, res) => {
   try {
-    const {resumeScore,teamName, memberEmails = [] } = req.body;
-    const {hackathonName} =req.params;
-    const userId = req.user._id; // Assuming user ID comes from auth middleware
+    
+    const {teamName, description = "" } = req.body;
+    const {hackathonId} =req.params;
+    const userId = req.user._id;
 
-    if (!resumeScore || !teamName || !hackathonName) {
+    if ( !teamName || !hackathonId) {
       return res.status(400).json({
         success: false,
-        message: "Please provide team name and hackathon name and resume score",
+        message: "Please Fill All the entries",
       });
     }
 
     // Check if hackathon exists
-    const hackathon = await Hackathon.findOne({ name: hackathonName });
+    const hackathon = await Hackathon.findById(hackathonId);
     if (!hackathon) {
       return res.status(404).json({
         success: false,
         message: "Hackathon not found",
       });
     }
+
 
     // Get current user
     const currentUser = await User.findById(userId);
@@ -47,80 +49,21 @@ export const createTeam = async (req, res) => {
       });
     }
 
-    // Remove duplicates and self-email
-    const uniqueEmails = [...new Set(memberEmails.map((email) => email.trim().toLowerCase()))].filter(
-      (email) => email !== currentUser.email.toLowerCase()
-    );
-
-    if (uniqueEmails.length + 1 > hackathon.maxTeamSize) {
-      return res.status(400).json({
-        success: false,
-        message: `Maximum team size for this hackathon is ${hackathon.maxTeamSize}`,
-      });
-    }
-
-    // Find users by email
-    const members = await User.find({ email: { $in: uniqueEmails } });
-
-    if (members.length !== uniqueEmails.length) {
-      const foundEmails = members.map((member) => member.email.toLowerCase());
-      const missingEmails = uniqueEmails.filter((email) => !foundEmails.includes(email));
-
-      return res.status(404).json({
-        success: false,
-        message: "Some members don't exist in the system",
-        missingEmails,
-      });
-    }
-
-    // Get member IDs
-    const memberIds = members.map((member) => member._id);
-
-    // Check if any members are already in a team for this hackathon
-    const membersInTeams = await Team.find({
-      hackathonId: hackathonObjectId,
-      $or: [{ leaderId: { $in: memberIds } }, { memberIds: { $in: memberIds } }],
-    }).populate("memberIds", "email");
-
-    if (membersInTeams.length > 0) {
-      const registeredEmails = new Set();
-
-      for (const team of membersInTeams) {
-        if (memberIds.some((id) => team.leaderId.equals(id))) {
-          const leader = await User.findById(team.leaderId);
-          if (leader) registeredEmails.add(leader.email);
-        }
-
-        for (const memberId of team.memberIds) {
-          if (memberIds.some((id) => id.equals(memberId))) {
-            const member = await User.findById(memberId);
-            if (member) registeredEmails.add(member.email);
-          }
-        }
-      }
-
-      return res.status(400).json({
-        success: false,
-        message: "Some users are already in another team for this hackathon",
-        registeredUsers: Array.from(registeredEmails),
-      });
-    }
-
+    
     // Create the team
     const newTeam = await Team.create({
       hackathonId: hackathonObjectId,
       teamName,
+      description,
       leaderId: userId,
-      memberIds,
-      memberEmails: uniqueEmails,
       roundAt: hackathon.roundAt,
-      resumeScore:resumeScore
+      memberIds: [userId],
     });
 
     return res.status(201).json({
       success: true,
       message: "Team created successfully",
-      team: newTeam,
+      teamId: newTeam._id,
     });
   } catch (error) {
     console.error("Error creating team:", error);
