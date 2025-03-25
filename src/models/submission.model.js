@@ -1,14 +1,9 @@
 import mongoose from "mongoose";
 
 const SubmissionSchema = new mongoose.Schema({
-  hackathonName:{
+  hackathonId:{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Hackathon',
-  },
-  roundId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "Round", 
-    required: true 
   },
   teamId: { 
     type: mongoose.Schema.Types.ObjectId, 
@@ -18,6 +13,10 @@ const SubmissionSchema = new mongoose.Schema({
   submissionUrl: { 
     type: String, 
     required: true 
+  },
+  gitUrl:{
+    type:String,
+    required:true
   },
   submittedAt: { 
     type: Date, 

@@ -5,7 +5,7 @@ import cors from 'cors'
 const app = express();
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "https://eventx-beige.vercel.app",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -18,9 +18,11 @@ app.use(cookieParser())
 import userRoutes from './routes/user.routes.js';
 import hackathonRoutes from './routes/hackathonOrganizer.routes.js'
 import participantRoutes from './routes/participants.routes.js';
+import submissionRoutes from './routes/submissions.routes.js'
 
 app.use("/api/v1/user",userRoutes)
 app.use("/api/v1/hackathon/organizer",hackathonRoutes)
 app.use("/api/v1/hackathon/participant", participantRoutes);
+app.use("/api/v1/hackathon/submissions",submissionRoutes)
 
 export{app}

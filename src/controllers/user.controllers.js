@@ -58,8 +58,9 @@ export const registerUser = async(req,res)=>{
 
         const options = {
             httpOnly: true, 
-            secure: true,
-            sameSite: "lax"
+            secure: false,
+            sameSite: "lax",
+            domain:"localhost"
         }
         
         return res.status(200)
@@ -104,7 +105,9 @@ export const loginUser = async(req,res)=>{
         
         const options = {
             httpOnly: true, 
-            secure: true
+            secure: true,
+            sameSite: "none",
+            domain:"eventx-backend-u79p.onrender.com"
         }
         
         return res
