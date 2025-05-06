@@ -103,14 +103,6 @@ export const joinTeam = async (req, res) => {
 
     const hackathon = await Hackathon.findById(team.hackathonId);
 
-    // Check if user is already in this team
-    if (team.leaderId.equals(userId) || team.memberIds.includes(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "You are already a member of this team",
-        teamId:team._id
-      });
-    }
     
     // Check if user is already in another team for this hackathon
     const existingTeam = await Team.findOne({
@@ -128,10 +120,17 @@ export const joinTeam = async (req, res) => {
         teamId:team._id
       });
     }
-
+     
+    if (team.leaderId.equals(userId) || team.memberIds.includes(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already a member of this team",
+        teamId:team._id
+      });
+    }
 
       //Check if team is already at max capacity
-      if (team.memberIds.length + 1 >= hackathon.maxTeamSize) {
+      if (team.memberIds.length + 1 > hackathon.maxTeamSize) {
         return res.status(400).json({
           success: false,
           message: "Team is already at maximum capacity"
